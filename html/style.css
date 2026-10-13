@@ -1,0 +1,752 @@
+/* Cores vêm do Config.Theme (app.js grava nas variáveis abaixo); os valores aqui são só o padrão.
+   Tudo fica sempre na tela: nada de filter nem sombra animada. */
+
+:root {
+    --accent: #ff7a1a;
+    --accent-rgb: 255, 122, 26;
+    --background: #0c0e12;
+    --background-rgb: 12, 14, 18;
+    --surface: #1b1f27;
+    --line: #2e3542;
+    --text: #f1f3f6;
+    --text-rgb: 241, 243, 246;
+    --muted: #9aa3b2;
+    --success: #4ade80;
+    --warning: #facc15;
+    --danger: #f43f5e;
+    --info: #60a5fa;
+    --thirst: #38bdf8;
+
+    --space: 0.9vh;
+    --cut: 0.9vh;
+    --chamfer: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+    --font: "Segoe UI", system-ui, Arial, sans-serif;
+    --font-display: "Bahnschrift", "Segoe UI Semibold", "Arial Narrow", Arial, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+}
+
+html,
+body {
+    height: 100%;
+    background: transparent;
+    color: var(--text);
+    font-family: var(--font);
+    font-size: clamp(12px, 1.35vh, 17px);
+    user-select: none;
+    overflow: hidden;
+}
+
+/* .hidden muda durante o jogo; .off é a parte desligada no Config.Show */
+.hidden,
+.off {
+    display: none !important;
+}
+
+.display {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.label {
+    font-family: var(--font-display);
+    font-size: 0.85em;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+@keyframes pulse {
+    50% {
+        opacity: 0.35;
+    }
+}
+
+/* mostradores: os degradês do SVG seguem o tema */
+.stop-face-in { stop-color: var(--surface); }
+.stop-face-mid { stop-color: var(--background); }
+.stop-face-out { stop-color: var(--background); }
+.stop-bezel-light { stop-color: var(--muted); }
+.stop-bezel-dark { stop-color: var(--surface); }
+
+#hud {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+}
+
+svg {
+    flex-shrink: 0;
+}
+
+.defs {
+    position: absolute;
+    width: 0;
+    height: 0;
+}
+
+/* ───────── marca, relógio, dinheiro e emprego ───────── */
+
+.top {
+    position: absolute;
+    top: 2.4vh;
+    right: 1.4vw;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5vh;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: var(--space);
+    margin-bottom: 0.4vh;
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.3vh;
+}
+
+.brand-text > b {
+    font-size: 1.5em;
+    line-height: 1;
+    text-shadow:
+        0 1px 3px #000,
+        0 0 1px #000;
+}
+
+.chips {
+    display: flex;
+    gap: 0.5vh;
+}
+
+.chip {
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
+    padding: 0.1vh 0.9vh;
+    border: 1px solid var(--line);
+    border-radius: 99px;
+    background: rgba(var(--background-rgb), 0.92);
+    font-size: 0.92em;
+    font-variant-numeric: tabular-nums;
+}
+
+.chip svg {
+    width: 1em;
+    height: 1em;
+    fill: var(--accent);
+}
+
+/* linha de saldo: faixa escura que some para a esquerda, ícone em ladrilho à direita */
+.money {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--space);
+    min-width: 25vh;
+    padding: 0.5vh 0.6vh 0.5vh 2.4vh;
+    background: linear-gradient(270deg, rgba(var(--background-rgb), 0.9) 35%, rgba(var(--background-rgb), 0));
+    border-right: 2px solid var(--accent);
+}
+
+.money-icon {
+    order: 3;
+    display: grid;
+    place-items: center;
+    width: 3vh;
+    height: 3vh;
+    background: rgba(var(--accent-rgb), 0.14);
+    clip-path: var(--chamfer);
+}
+
+.money-icon svg {
+    width: 60%;
+    height: 60%;
+    fill: var(--accent);
+}
+
+.money .label {
+    flex: 1;
+    text-align: right;
+    font-size: 0.78em;
+}
+
+.money > b {
+    min-width: 10ch;
+    text-align: right;
+    font-size: 1.4em;
+    font-variant-numeric: tabular-nums;
+}
+
+/* variação do saldo: aparece à esquerda da linha e some sozinha */
+.delta {
+    position: absolute;
+    right: 100%;
+    margin-right: var(--space);
+    padding: 0 0.8vh;
+    border-radius: 99px;
+    background: rgba(var(--background-rgb), 0.92);
+    white-space: nowrap;
+    font-style: normal;
+    opacity: 0;
+}
+
+.delta.up {
+    color: var(--success);
+}
+
+.delta.down {
+    color: var(--danger);
+}
+
+.delta.play {
+    animation: delta 2.8s ease-out both;
+}
+
+@keyframes delta {
+    0% {
+        opacity: 0;
+        transform: translateX(1.5vh);
+    }
+    12%,
+    75% {
+        opacity: 1;
+        transform: none;
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-1vh);
+    }
+}
+
+.job {
+    display: flex;
+    align-items: center;
+    gap: var(--space);
+    margin-top: 0.3vh;
+    padding: 0.3vh 1vh;
+    border: 1px solid var(--line);
+    border-radius: 99px;
+    background: rgba(var(--background-rgb), 0.92);
+}
+
+.job .label {
+    font-size: 0.75em;
+}
+
+.duty-dot {
+    width: 0.8vh;
+    height: 0.8vh;
+    border-radius: 50%;
+    background: var(--muted);
+}
+
+.job.on .duty-dot {
+    background: var(--success);
+}
+
+.job.on span {
+    color: var(--success);
+}
+
+/* ───────── status, rua e bairro ───────── */
+
+.left {
+    position: absolute;
+    left: 1.4vw;
+    bottom: 2.4vh;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8vh;
+}
+
+/* com o minimapa do jogo na tela, o bloco vai para o lado dele */
+#hud.radar .left {
+    left: var(--radar-edge, 21.5vw);
+}
+
+.place {
+    display: flex;
+    align-items: center;
+    gap: var(--space);
+    align-self: flex-start;
+    padding: 0.4vh 2.6vh 0.4vh 0.4vh;
+    background: linear-gradient(90deg, rgba(var(--background-rgb), 0.9) 35%, rgba(var(--background-rgb), 0));
+    border-left: 2px solid var(--accent);
+}
+
+.place > b {
+    display: grid;
+    place-items: center;
+    width: 3.6vh;
+    height: 3.6vh;
+    background: rgba(var(--accent-rgb), 0.14);
+    color: var(--muted);
+    font-size: 1.25em;
+    clip-path: var(--chamfer);
+}
+
+.place span {
+    display: block;
+    line-height: 1.25;
+    white-space: nowrap;
+}
+
+.place .label {
+    font-size: 0.75em;
+}
+
+.vitals {
+    display: flex;
+    gap: 0.7vh;
+}
+
+.vital {
+    --tone: var(--accent);
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 4.8vh;
+    height: 4.8vh;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--surface) 0%, rgba(var(--background-rgb), 0.92) 70%);
+}
+
+.vital[data-tone="health"] {
+    --tone: var(--success);
+}
+
+.vital[data-tone="armor"] {
+    --tone: var(--info);
+}
+
+.vital[data-tone="hunger"] {
+    --tone: var(--warning);
+}
+
+.vital[data-tone="thirst"] {
+    --tone: var(--thirst);
+}
+
+.vital[data-tone="soft"] {
+    --tone: var(--muted);
+}
+
+.ring {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.ring circle {
+    fill: none;
+    stroke-width: 3;
+}
+
+.ring-bg {
+    stroke: rgba(var(--text-rgb), 0.1);
+}
+
+.ring-fg {
+    stroke: var(--tone);
+    stroke-linecap: round;
+    stroke-dasharray: 100 100;
+    transition: stroke-dasharray 0.4s ease;
+}
+
+.vital .icon {
+    width: 42%;
+    height: 42%;
+    fill: var(--tone);
+}
+
+/* valor em número, embaixo do anel */
+.vital em {
+    position: absolute;
+    bottom: -0.5vh;
+    padding: 0 0.5vh;
+    border-radius: 99px;
+    background: var(--background);
+    color: var(--text);
+    font-family: var(--font-display);
+    font-size: 0.68em;
+    font-style: normal;
+    line-height: 1.35;
+    font-variant-numeric: tabular-nums;
+}
+
+.vital em:empty {
+    display: none;
+}
+
+.vital.warn {
+    --tone: var(--warning);
+}
+
+.vital.low {
+    --tone: var(--danger);
+}
+
+.vital.low .icon {
+    animation: pulse 0.9s ease-in-out infinite;
+}
+
+/* voz: o anel mostra o alcance e acende ao falar */
+.vital.voice .ring-fg,
+.vital.radio .ring-fg {
+    stroke: var(--muted);
+}
+
+.vital.voice .icon,
+.vital.radio .icon {
+    fill: var(--muted);
+}
+
+.vital.voice.talking .ring-fg,
+.vital.radio.talking .ring-fg {
+    stroke: var(--accent);
+}
+
+.vital.voice.talking .icon,
+.vital.radio.talking .icon {
+    fill: var(--accent);
+}
+
+/* ───────── arma na mão ───────── */
+
+.weapon {
+    position: absolute;
+    right: 1.4vw;
+    bottom: 2.4vh;
+    display: flex;
+    align-items: center;
+    gap: var(--space);
+    min-width: 22vh;
+    padding: 0.5vh 0.6vh 0.5vh 2.4vh;
+    background: linear-gradient(270deg, rgba(var(--background-rgb), 0.9) 35%, rgba(var(--background-rgb), 0));
+    border-right: 2px solid var(--accent);
+}
+
+/* ao dirigir, fica logo acima do painel do veículo */
+#hud.driving .weapon {
+    bottom: 30.5vh;
+}
+
+.weapon-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.ammo {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6vh;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+}
+
+.ammo b {
+    font-size: 1.9em;
+}
+
+.ammo span {
+    color: var(--muted);
+    font-size: 1.05em;
+}
+
+.weapon.low .ammo b {
+    color: var(--warning);
+}
+
+.weapon.empty .ammo b {
+    color: var(--danger);
+}
+
+.weapon-icon {
+    display: grid;
+    place-items: center;
+    width: 4.4vh;
+    height: 4.4vh;
+    background: rgba(var(--accent-rgb), 0.14);
+    clip-path: var(--chamfer);
+}
+
+.weapon-icon svg {
+    grid-area: 1 / 1;
+    width: 62%;
+    height: 62%;
+    fill: var(--accent);
+}
+
+/* ───────── painel do veículo ───────── */
+
+.cluster {
+    position: absolute;
+    right: 1.4vw;
+    bottom: 2.4vh;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 36vh;
+}
+
+.gauges {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+}
+
+.tick {
+    stroke: rgba(var(--text-rgb), 0.55);
+    stroke-width: 1.2;
+}
+
+.tick.major {
+    stroke: var(--text);
+    stroke-width: 2.2;
+}
+
+.tick.red {
+    stroke: var(--danger);
+}
+
+.tick-label {
+    fill: var(--text);
+    font-family: var(--font-display);
+    font-size: 11px;
+    font-weight: 700;
+    text-anchor: middle;
+    dominant-baseline: central;
+}
+
+.tick-label.small {
+    font-size: 9.5px;
+}
+
+.tick-label.red {
+    fill: var(--danger);
+}
+
+.redline {
+    fill: none;
+    stroke: var(--danger);
+    stroke-width: 3;
+    opacity: 0.85;
+}
+
+/* único detalhe na cor de destaque do mostrador: o rastro fino na borda */
+.trail-track,
+.trail {
+    fill: none;
+    stroke-width: 2.5;
+    transform: rotate(135deg);
+    transform-origin: 222px 104px;
+}
+
+.trail-track {
+    stroke: rgba(var(--text-rgb), 0.08);
+    stroke-dasharray: 270 360;
+}
+
+.trail {
+    stroke: var(--accent);
+    stroke-linecap: round;
+    stroke-dasharray: 0 360;
+}
+
+.gauge-wrap {
+    position: relative;
+}
+
+/* Ponteiro vermelho, como em painel de carro. É um elemento HTML por cima do mostrador,
+   posicionado no centro dele (em % da caixa 330 x 210 do SVG): girá-lo não repinta o resto. */
+.needle {
+    position: absolute;
+    width: 0;
+    height: 0;
+    transform: rotate(-135deg);
+    transition: transform 0.12s linear;
+    will-change: transform;
+}
+
+.needle.speed {
+    left: 67.27%;
+    top: 49.52%;
+    --length: 9vh;
+    --tail: 1.7vh;
+    --hub: 2.2vh;
+}
+
+.needle.rpm {
+    left: 21.82%;
+    top: 60.95%;
+    --length: 5.7vh;
+    --tail: 1.1vh;
+    --hub: 1.6vh;
+}
+
+.needle i {
+    position: absolute;
+    left: -0.4vh;
+    bottom: calc(var(--tail) * -1);
+    width: 0.8vh;
+    height: calc(var(--length) + var(--tail));
+    background: var(--danger);
+    clip-path: polygon(50% 0, 100% 84%, 50% 100%, 0 84%);
+}
+
+.needle b {
+    position: absolute;
+    left: calc(var(--hub) / -2);
+    top: calc(var(--hub) / -2);
+    width: var(--hub);
+    height: var(--hub);
+    border: 2px solid var(--accent);
+    border-radius: 50%;
+    background: var(--background);
+}
+
+.unit {
+    fill: var(--muted);
+    font-family: var(--font-display);
+    font-size: 8px;
+    letter-spacing: 0.12em;
+    text-anchor: middle;
+    text-transform: uppercase;
+}
+
+.unit.small {
+    font-size: 6.5px;
+}
+
+.readout-box,
+.gear-box {
+    fill: var(--background);
+    stroke: var(--line);
+    stroke-width: 1;
+}
+
+.speed {
+    fill: var(--text);
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 700;
+    text-anchor: middle;
+    font-variant-numeric: tabular-nums;
+}
+
+.gear {
+    fill: var(--accent);
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 700;
+    text-anchor: middle;
+}
+
+.dash {
+    display: flex;
+    align-items: center;
+    gap: 1.2vh;
+    margin-top: 0.6vh;
+    padding: 0.6vh 1.2vh;
+    border: 1px solid var(--line);
+    border-radius: 99px;
+    background: rgba(var(--background-rgb), 0.92);
+}
+
+.lamps {
+    display: flex;
+    gap: 0.9vh;
+}
+
+.lamp {
+    width: 2.2vh;
+    height: 2.2vh;
+    fill: rgba(var(--text-rgb), 0.16);
+}
+
+.lamp.on {
+    fill: var(--success);
+}
+
+.lamp.high {
+    fill: var(--info);
+}
+
+.lamp.warn {
+    fill: var(--warning);
+}
+
+.lamp.bad {
+    fill: var(--danger);
+}
+
+.lamp.blink {
+    animation: pulse 0.7s steps(2) infinite;
+}
+
+.fuel {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.6vh;
+}
+
+.fuel svg {
+    width: 2vh;
+    height: 2vh;
+    fill: var(--muted);
+}
+
+.fuel .label {
+    font-size: 0.72em;
+}
+
+.fuel .track {
+    flex: 1;
+    height: 0.7vh;
+    /* marcas de quarto de tanque */
+    background:
+        repeating-linear-gradient(90deg, transparent 0 calc(25% - 1px), var(--background) calc(25% - 1px) 25%),
+        rgba(var(--text-rgb), 0.14);
+    overflow: hidden;
+}
+
+.fuel .fill {
+    height: 100%;
+    background: var(--text);
+    transform-origin: left;
+    transform: scaleX(0);
+    transition: transform 0.4s ease;
+    mix-blend-mode: normal;
+}
+
+.fuel b {
+    min-width: 4ch;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.fuel.low .fill {
+    background: var(--danger);
+}
+
+.fuel.low svg {
+    fill: var(--danger);
+    animation: pulse 0.9s ease-in-out infinite;
+}
