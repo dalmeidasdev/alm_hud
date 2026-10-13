@@ -1,6 +1,7 @@
 # Instalação do alm_hud
 
 1. Baixe o `alm_hud-<versão>.zip` na página de Releases do GitHub (`github.com/dalmeidasdev/alm_hud/releases`). Se pegou pela loja, baixe pelo link do e-mail ou pelo portal da Cfx (`portal.cfx.re`), usando a mesma conta Cfx dona da license key do servidor.
+   Não use o "Source code (zip)" nem o botão "Download ZIP" do GitHub: eles entregam a pasta com outro nome (`alm_hud-1.0.0`, `alm_hud-main`). Se já baixou assim, renomeie a pasta para `alm_hud`.
 2. Extraia a pasta `alm_hud` dentro de `resources/`. **A pasta tem de se chamar `alm_hud`.**
 3. Tire ou desligue o HUD que você usava antes (por exemplo `qb-hud` ou `ps-hud`): dois HUDs ao mesmo tempo ficam um por cima do outro.
 4. No `server.cfg`, depois da linha do seu framework:
@@ -19,8 +20,8 @@
 ## Problemas comuns
 | O que acontece | Causa | Solução |
 |---|---|---|
-| `You lack the required entitlement` | A license key do servidor é de outra conta Cfx | Use a license key da mesma conta Cfx que pegou o HUD na loja |
-| `Failed to verify protected resource` | Arquivo corrompido no envio por FTP, ou pasta renomeada | Envie de novo em modo binário e mantenha o nome `alm_hud` |
+| `You lack the required entitlement` (só no pacote da loja) | A license key do servidor é de outra conta Cfx | Use a license key da mesma conta Cfx que pegou o HUD na loja, ou baixe pelo GitHub |
+| `Failed to verify protected resource` (só no pacote da loja) | Arquivo corrompido no envio por FTP, ou pasta renomeada | Envie de novo em modo binário e mantenha o nome `alm_hud` |
 | Erro de sintaxe em arquivo `.lua` | Servidor antigo | Atualize o FXServer para o build 5181 ou mais novo |
 | Dinheiro em zero e sem emprego | O framework não foi reconhecido | Deixe o `ensure alm_hud` depois do framework; confira `Config.Framework` |
 | Fome e sede não aparecem | O framework não informa esses valores | Normal no modo `standalone`; em outra base, ajuste `bridge/client/` |

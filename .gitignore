@@ -1,0 +1,15 @@
+# Segredos e configuração de servidor: nunca entram neste repositório
+.env
+.env.*
+server.cfg
+*.key
+*.pem
+
+# Banco de dados e logs
+*.sql
+*.log
+
+# Zips e lixo do sistema
+*.zip
+Thumbs.db
+.DS_Store
