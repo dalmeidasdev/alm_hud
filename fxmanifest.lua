@@ -32,7 +32,7 @@ files {
     'html/app.js',
 }
 
--- O que o comprador pode abrir e editar. Todo o resto em Lua vai criptografado pelo Asset Escrow.
+-- Arquivos que o dono do servidor ajusta. O bloco só tem efeito se o resource for distribuído pelo Asset Escrow da Cfx.
 escrow_ignore {
     'config.lua',
     'locales/*.lua',

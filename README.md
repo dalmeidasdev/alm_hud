@@ -51,8 +51,6 @@ No QBCore com o `qb-smallresources`, o cinto já vem ligado: não precisa chamar
 ## Código aberto
 Todo o código deste repositório é aberto para leitura. Para ajustar o HUD ao seu servidor você só precisa mexer em `config.lua`, `locales/` e `bridge/`. A pasta `bridge/` é a ligação com o framework e com a voz: é ali que se adapta o HUD a uma base diferente.
 
-Se você pegou o HUD pela loja (Tebex / portal da Cfx) em vez do GitHub, o pacote de lá passa pelo Asset Escrow: nele, o Lua fora de `config.lua`, `locales/` e `bridge/` vem protegido e exige a license key da mesma conta Cfx. O funcionamento é o mesmo.
-
 O script não coleta nem envia dados do seu servidor. Com `Config.VersionCheck` ligado, ele só lê um arquivo público (`https://raw.githubusercontent.com/dalmeidasdev/versions/main/versions.json`) para avisar no console quando sai versão nova.
 
 ## Licença
