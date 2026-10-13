@@ -9,6 +9,12 @@ HUD completo para servidores de RP, por Almeida Scripts. Gratuito.
 
 Cada parte liga e desliga no `config.lua`, e as cores são suas.
 
+## Baixar
+Pegue o `alm_hud-<versão>.zip` na página de [Releases](https://github.com/dalmeidasdev/alm_hud/releases). O botão "Download ZIP" do GitHub entrega a pasta com outro nome; se usar esse caminho, renomeie a pasta para `alm_hud`. O passo a passo está no `INSTALL.md`.
+
+## Desempenho
+Medido no `resmon` em um servidor QBCore limpo: 0,04 ms a pé e 0,10 ms dirigindo.
+
 ## Requisitos
 - FXServer build 5181 ou mais novo.
 - Nenhum outro resource é obrigatório.
@@ -16,7 +22,7 @@ Cada parte liga e desliga no `config.lua`, e as cores são suas.
 ## Funciona com
 | Base | Situação |
 |---|---|
-| QBCore | adaptador incluído, **ainda em teste** |
+| QBCore | adaptador incluído, testado no qb-core 1.3.0 |
 | Sem framework (`standalone`) | sem dinheiro, emprego, fome e sede |
 | vRP / Creative | previsto para a próxima versão |
 
@@ -45,7 +51,10 @@ No QBCore com o `qb-smallresources`, o cinto já vem ligado: não precisa chamar
 ## Arquivos abertos e protegidos
 `config.lua`, `locales/` e `bridge/` são abertos para você ajustar. A pasta `bridge/` é a ligação com o framework e com a voz: é ali que se adapta o HUD a uma base diferente. O restante do Lua é protegido pelo Asset Escrow da Cfx. A interface (`html/`) é aberta.
 
-O script não coleta nem envia dados do seu servidor. Com `Config.VersionCheck` ligado, ele só lê um arquivo público para avisar no console quando sai versão nova.
+O script não coleta nem envia dados do seu servidor. Com `Config.VersionCheck` ligado, ele só lê um arquivo público (`https://raw.githubusercontent.com/dalmeidasdev/versions/main/versions.json`) para avisar no console quando sai versão nova.
+
+## Licença
+Uso livre em qualquer servidor e modificação para uso próprio. Não é permitido vender nem republicar. O texto completo está no arquivo `LICENSE`.
 
 ## Suporte
 Pelo Discord da Almeida Scripts.

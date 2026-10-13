@@ -1,7 +1,7 @@
 # Instalação do alm_hud
 
-1. Baixe o arquivo pelo link que a loja envia por e-mail ou pelo portal da Cfx (`portal.cfx.re`), usando a mesma conta Cfx dona da license key do servidor.
-2. Extraia a pasta `alm_hud` dentro de `resources/`. **Não renomeie a pasta.**
+1. Baixe o `alm_hud-<versão>.zip` na página de Releases do GitHub (`github.com/dalmeidasdev/alm_hud/releases`). Se pegou pela loja, baixe pelo link do e-mail ou pelo portal da Cfx (`portal.cfx.re`), usando a mesma conta Cfx dona da license key do servidor.
+2. Extraia a pasta `alm_hud` dentro de `resources/`. **A pasta tem de se chamar `alm_hud`.**
 3. Tire ou desligue o HUD que você usava antes (por exemplo `qb-hud` ou `ps-hud`): dois HUDs ao mesmo tempo ficam um por cima do outro.
 4. No `server.cfg`, depois da linha do seu framework:
    ```

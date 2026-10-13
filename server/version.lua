@@ -1,7 +1,7 @@
 -- Aviso de versão nova no console. Lê um JSON público ({ "<resource>": "1.2.0" }) e compara com a
 -- versão do manifesto. Não envia dado nenhum do servidor e não muda o funcionamento do script.
 
-local VERSION_URL = '' -- preenchido quando a loja tiver o arquivo de versões publicado
+local VERSION_URL = 'https://raw.githubusercontent.com/dalmeidasdev/versions/main/versions.json'
 
 if not Config.VersionCheck or VERSION_URL == '' then return end
 
