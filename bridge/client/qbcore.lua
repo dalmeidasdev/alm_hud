@@ -9,13 +9,20 @@ local QBCore = exports['qb-core']:GetCoreObject()
 -- evita depender de qual resource recebe o aviso primeiro.
 local cache = nil
 
+-- Campos do personagem que o HUD usa; aviso de qualquer outro campo é ignorado
+local USED <const> = { money = true, metadata = true, job = true, charinfo = true, citizenid = true }
+
+local function tbl(value)
+    return type(value) == 'table' and value or {}
+end
+
 local function normalize(data)
-    data = data or {}
-    local info = data.charinfo or {}
-    local money = data.money or {}
-    local job = data.job or {}
-    local grade = job.grade or {}
-    local meta = data.metadata or {}
+    data = tbl(data)
+    local info = tbl(data.charinfo)
+    local money = tbl(data.money)
+    local job = tbl(data.job)
+    local grade = tbl(job.grade)
+    local meta = tbl(data.metadata)
     return {
         identifier = data.citizenid,
         name = ('%s %s'):format(info.firstname or '', info.lastname or ''),
@@ -91,7 +98,7 @@ RegisterNetEvent('QBCore:Client:OnPlayerUpdated', function(key, value)
     if key == 'all' then
         if type(value) ~= 'table' then return end
         cache = value
-    elseif type(key) == 'string' then
+    elseif USED[key] then
         cache = cache or QBCore.Functions.GetPlayerData() or {}
         cache[key] = value
     else

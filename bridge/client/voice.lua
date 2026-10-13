@@ -17,6 +17,13 @@ end
 
 if GetResourceState('pma-voice') == 'missing' then return end
 
+---Canal do rádio como vem do sistema de voz: número diferente de zero ou texto curto; o resto é "fora do rádio"
+local function channelOf(value)
+    if type(value) == 'number' then return value ~= 0 and value or nil end
+    if type(value) == 'string' and value ~= '' and #value <= 8 then return value end
+    return nil
+end
+
 local function publish()
     Bridge.Emit('voice', state)
 end
@@ -36,8 +43,7 @@ CreateThread(function()
 
     local proximity = LocalPlayer.state.proximity
     if type(proximity) == 'table' and tonumber(proximity.index) then state.range = tonumber(proximity.index) end
-    local channel = LocalPlayer.state.radioChannel
-    state.radio = (channel and channel ~= 0) and channel or nil
+    state.radio = channelOf(LocalPlayer.state.radioChannel)
     publish()
 
     local bag = ('player:%s'):format(GetPlayerServerId(PlayerId()))
@@ -51,7 +57,7 @@ CreateThread(function()
     end)
 
     AddStateBagChangeHandler('radioChannel', bag, function(_, _, value)
-        state.radio = (value and value ~= 0) and value or nil
+        state.radio = channelOf(value)
         if not state.radio then state.radioTalking = false end
         publish()
     end)

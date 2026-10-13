@@ -3,7 +3,7 @@ local resourceName = GetCurrentResourceName()
 local visible = false         -- HUD na tela
 local loaded = false          -- personagem na cidade
 local hiddenByPlayer = false  -- escondido pelo comando
-local covers = {}             -- quem pediu para o HUD sair -> true
+local covers = {}             -- id de quem pediu para o HUD sair -> resource que pediu (ou true)
 
 local money = { cash = 0, bank = 0 }
 local needs = {}   -- { hunger, thirst }; vazio se o framework não tem
@@ -13,6 +13,20 @@ local belt = nil   -- true ou false quando um script de cinto informa; nil escon
 local SHOW <const> = Config.Show
 local SPEED_FACTOR <const> = Config.SpeedUnit == 'mph' and 2.236936 or 3.6
 local UNARMED <const> = joaat('WEAPON_UNARMED')
+
+-- Intervalos do config com piso: valor errado ou apagado não vira laço por quadro
+local function interval(value, default)
+    return math.max(50, math.floor(tonumber(value) or default))
+end
+local ON_FOOT <const> = interval(Config.IntervalOnFoot, 400)
+local ARMED <const> = interval(Config.IntervalArmed, 150)
+local IN_VEHICLE <const> = interval(Config.IntervalInVehicle, 100)
+local LOCATION <const> = interval(Config.LocationInterval, 1500)
+
+local NO_BELT <const> = {} -- classes de veículo sem cinto
+for _, class in ipairs(type(Config.NoSeatbeltClasses) == 'table' and Config.NoSeatbeltClasses or { 8, 13, 14 }) do
+    NO_BELT[class] = true
+end
 
 local HIDDEN_JOBS <const> = {}
 for _, name in ipairs(Config.HiddenJobs) do HIDDEN_JOBS[name] = true end
@@ -78,7 +92,6 @@ end
 
 ---Vida de 0 a 100 (o jogo conta de 100 até o máximo)
 local function healthPercent(ped)
-    if IsEntityDead(ped) then return 0 end
     local max = GetEntityMaxHealth(ped) - 100
     if max <= 0 then return 0 end
     local percent = math.floor((GetEntityHealth(ped) - 100) / max * 100 + 0.5)
@@ -97,13 +110,20 @@ local function streetName(name)
     return shown
 end
 
+local zoneCache = {} -- código da zona -> nome mostrado
+
 local function zoneName(code)
     if type(code) ~= 'string' then return '' end
-    local shown = Config.Zones[code:upper()]
-    if shown then return shown end
-    local label = GetLabelText(code)
-    if not label or label == 'NULL' then return '' end
-    return label
+    local shown = zoneCache[code]
+    if not shown then
+        shown = Config.Zones[code:upper()]
+        if not shown then
+            local label = GetLabelText(code)
+            shown = (label and label ~= 'NULL') and label or ''
+        end
+        zoneCache[code] = shown
+    end
+    return shown
 end
 
 ---Rua, bairro, direção (1 a 8, a partir do norte no sentido anti-horário) e hora do jogo
@@ -180,7 +200,7 @@ local function statusLoop()
 
             -- rua, relógio e o acerto do minimapa mudam mais devagar ainda: intervalo próprio
             if now >= nextLocation then
-                nextLocation = now + Config.LocationInterval
+                nextLocation = now + LOCATION
                 local street, zone, direction, clock = location(ped)
                 put('street', street)
                 put('zone', zone)
@@ -209,9 +229,8 @@ local function statusLoop()
                 put('lights', isTrue(highBeams) and 2 or (isTrue(lightsOn) and 1 or 0))
                 put('locked', GetVehicleDoorLockStatus(veh) >= 2)
                 put('handbrake', isTrue(GetVehicleHandbrake(veh)))
-                -- moto, bicicleta e barco não têm cinto: a luz some
-                local class = GetVehicleClass(veh)
-                put('noBelt', class == 8 or class == 13 or class == 14)
+                -- veículo sem cinto (moto, bicicleta, barco): a luz some
+                put('noBelt', NO_BELT[GetVehicleClass(veh)] == true)
                 if SHOW.fuel then put('fuel', math.floor(math.min(100.0, math.max(0.0, GetVehicleFuelLevel(veh))) + 0.5)) end
             end
             if changed then SendNUIMessage(slow) end
@@ -236,10 +255,11 @@ local function statusLoop()
             end
 
             -- a pé o próprio Wait do laço já dá o intervalo: a leitura lenta roda em toda volta
-            nextSlow = inVehicle and now + (armed and Config.IntervalArmed or Config.IntervalOnFoot) or 0
+            nextSlow = inVehicle and now + (armed and ARMED or ON_FOOT) or 0
         end
 
-        if inVehicle then
+        -- com o menu de pausa aberto o HUD está escondido: não precisa da leitura rápida
+        if inVehicle and not paused then
             local speed = math.floor(GetEntitySpeed(veh) * SPEED_FACTOR + 0.5)
             -- giro em passos de 2%: o arco não precisa de mais que isso
             local rpm = GetIsVehicleEngineRunning(veh) and math.floor(GetVehicleCurrentRpm(veh) * 50 + 0.5) or 0
@@ -248,18 +268,17 @@ local function statusLoop()
                 fast.speed, fast.rpm, fast.gear = speed, rpm, gear
                 SendNUIMessage(fast)
             end
-        else
+        elseif not inVehicle then
             fast.speed = nil -- ao entrar em outro veículo, a primeira leitura sempre sai
         end
 
-        -- com o menu de pausa aberto o HUD está escondido: não precisa da leitura rápida
         if paused then
             nextSlow = 0
-            Wait(Config.IntervalOnFoot)
+            Wait(ON_FOOT)
         elseif inVehicle then
-            Wait(Config.IntervalInVehicle)
+            Wait(IN_VEHICLE)
         else
-            Wait(armed and Config.IntervalArmed or Config.IntervalOnFoot)
+            Wait(armed and ARMED or ON_FOOT)
         end
     end
     -- HUD escondido: o minimapa volta ao padrão a pé (se outro laço já assumiu, o minimapa é dele)
@@ -287,6 +306,7 @@ local function refresh()
         serverName = Config.ServerName,
         speedUnit = Config.SpeedUnit == 'mph' and 'mph' or 'kmh',
         maxSpeed = Config.DialMaxSpeed,
+        driveInterval = IN_VEHICLE,
         id = GetPlayerServerId(PlayerId()),
     })
     sendMoney()
@@ -322,9 +342,9 @@ end)
 
 ---Tira o HUD da tela enquanto uma tela cheia de outro script estiver aberta.
 ---exports.<este resource>:Cover('minha_tela', true) ao abrir e (..., false) ao fechar.
-local function cover(id, on)
-    if type(id) ~= 'string' then return end
-    covers[id] = on and true or nil
+local function cover(id, on, owner)
+    if type(id) ~= 'string' or #id > 64 then return end
+    covers[id] = on and (owner or true) or nil
     refresh()
 end
 
@@ -338,11 +358,12 @@ local function setSeatbelt(on)
 end
 
 exports('Cover', function(id, on)
-    cover(id or GetInvokingResource(), on)
+    local owner = GetInvokingResource()
+    cover(id or owner, on, owner)
 end)
 exports('SetSeatbelt', setSeatbelt)
 
-AddEventHandler(resourceName .. ':cover', cover)
+AddEventHandler(resourceName .. ':cover', function(id, on) cover(id, on) end)
 AddEventHandler(resourceName .. ':seatbelt', setSeatbelt)
 
 -- o adaptador do framework também pode informar o cinto
@@ -352,8 +373,10 @@ Bridge.On('seatbelt', setSeatbelt)
 AddEventHandler('onResourceStop', function(resource)
     if resource == resourceName then
         DisplayRadar(true)
-    elseif covers[resource] then
-        covers[resource] = nil
+    else
+        for id, owner in pairs(covers) do
+            if id == resource or owner == resource then covers[id] = nil end
+        end
         refresh()
     end
 end)
@@ -370,10 +393,12 @@ RegisterNUICallback('ready', function(_, cb)
     cb({})
 end)
 
-RegisterCommand(Config.ToggleCommand, function()
-    hiddenByPlayer = not hiddenByPlayer
-    refresh()
-end, false)
+if type(Config.ToggleCommand) == 'string' and Config.ToggleCommand ~= '' then
+    RegisterCommand(Config.ToggleCommand, function()
+        hiddenByPlayer = not hiddenByPlayer
+        refresh()
+    end, false)
+end
 
 -- Resource iniciado com o jogador já dentro da cidade
 CreateThread(function()

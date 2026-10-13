@@ -17,6 +17,7 @@ const SWEEP = 270; // o mostrador ocupa três quartos do círculo, em graus
 const SVG_NS = "http://www.w3.org/2000/svg";
 const HEX = /^#[0-9a-f]{6}$/i;
 const RGB_KEYS = ["accent", "background", "text"]; // cores que o CSS também usa com transparência
+const THEME_KEYS = ["accent", "background", "surface", "line", "text", "muted", "success", "warning", "danger", "info", "thirst"];
 const lastMoney = { cash: null, bank: null };
 const lastDrive = { speed: null, gear: null, edge: null, blink: null };
 
@@ -24,7 +25,7 @@ const clamp = (value, min, max) => Math.min(max, Math.max(min, Number(value) || 
 
 function formatMoney(value) {
     const digits = String(Math.floor(Math.abs(Number(value) || 0)));
-    return `${currency.symbol} ${digits.replace(/\B(?=(\d{3})+(?!\d))/g, currency.thousands)}`;
+    return `${currency.symbol} ${digits.replace(/\B(?=(\d{3})+(?!\d))/g, () => currency.thousands)}`;
 }
 
 function updateVisibility() {
@@ -36,7 +37,7 @@ function updateVisibility() {
 function applyTheme(theme = {}) {
     const root = document.documentElement.style;
     for (const [key, value] of Object.entries(theme)) {
-        if (typeof value !== "string" || !HEX.test(value)) continue;
+        if (!THEME_KEYS.includes(key) || typeof value !== "string" || !HEX.test(value)) continue;
         root.setProperty(`--${key}`, value);
         if (RGB_KEYS.includes(key)) {
             const n = parseInt(value.slice(1), 16);
@@ -114,7 +115,14 @@ function buildTicks() {
 
 function show(data) {
     L = data.locale || {};
-    if (data.currency) currency = data.currency;
+    if (data.currency) {
+        const { symbol, thousands } = data.currency;
+        if (typeof symbol === "string" && symbol.length <= 4) currency.symbol = symbol;
+        if (typeof thousands === "string" && thousands.length <= 1) currency.thousands = thousands;
+    }
+    // o ponteiro leva o tempo de uma leitura para chegar ao valor novo: fica liso em qualquer intervalo
+    const needleMs = clamp(data.driveInterval, 50, 1000) + 20;
+    document.documentElement.style.setProperty("--needle-ms", `${needleMs}ms`);
     maxSpeed = Number(data.maxSpeed) > 0 ? Number(data.maxSpeed) : maxSpeed;
     applyTheme(data.theme);
     applyParts(data.show);

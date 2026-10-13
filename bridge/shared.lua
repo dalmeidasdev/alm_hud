@@ -11,11 +11,14 @@ local KNOWN = {
 }
 
 local function detect()
+    -- Framework forçado no config só vale se estiver na lista e ligado; senão cai no standalone
     local wanted = Config.Framework
-    if type(wanted) == 'string' and wanted ~= 'auto' then return wanted end
+    local forced = type(wanted) == 'string' and wanted ~= 'auto'
     for _, framework in ipairs(KNOWN) do
-        local state = GetResourceState(framework.resource)
-        if state == 'started' or state == 'starting' then return framework.name end
+        if not forced or framework.name == wanted then
+            local state = GetResourceState(framework.resource)
+            if state == 'started' or state == 'starting' then return framework.name end
+        end
     end
     return 'standalone'
 end

@@ -4,7 +4,7 @@ lua54 'yes'
 
 author 'Almeida Scripts'
 description 'HUD completo: status, dinheiro, emprego, voz, arma e painel do veículo'
-version '1.0.0'
+version '1.0.1'
 
 -- Sem `dependencies` de framework: a ponte (bridge/) descobre sozinha o que está no servidor.
 

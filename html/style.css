@@ -580,7 +580,7 @@ svg {
     width: 0;
     height: 0;
     transform: rotate(-135deg);
-    transition: transform 0.12s linear;
+    transition: transform var(--needle-ms, 120ms) linear;
     will-change: transform;
 }
 

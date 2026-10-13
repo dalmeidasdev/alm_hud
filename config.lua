@@ -49,10 +49,13 @@ Config.MinimapInVehicle = true  -- mostra o minimapa dentro de veículo
 Config.HideMinimapBars = true   -- tira do minimapa as barras de vida e colete do jogo (o HUD já mostra)
 Config.MinimapEdge = 21.5       -- onde o minimapa termina em 16:9, em % da largura da tela; o bloco de status fica logo depois
 
+-- Classes de veículo sem cinto: a luz do cinto não aparece nelas (8 moto, 13 bicicleta, 14 barco)
+Config.NoSeatbeltClasses = { 8, 13, 14 }
+
 -- Quantos alcances de voz existem no seu servidor (o anel do microfone enche conforme o alcance)
 Config.VoiceRanges = 3
 
--- Intervalos de leitura, em milissegundos. Menor = mais fluido e mais custo.
+-- Intervalos de leitura, em milissegundos. Menor = mais fluido e mais custo. O mínimo aceito é 50.
 Config.IntervalOnFoot = 400
 Config.IntervalArmed = 150      -- com arma de fogo na mão (para a munição acompanhar os tiros)
 Config.IntervalInVehicle = 100
