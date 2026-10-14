@@ -57,4 +57,4 @@ O script não coleta nem envia dados do seu servidor. Com `Config.VersionCheck` 
 Uso livre em qualquer servidor e modificação para uso próprio. Não é permitido vender nem republicar; fork no GitHub para estudar ou propor mudanças é permitido. O texto completo está no arquivo `LICENSE`.
 
 ## Suporte
-Pelo Discord da Almeida Scripts.
+Pelo Discord da Almeida Scripts: https://discord.gg/dfuF2gz8NQ
