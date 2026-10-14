@@ -13,7 +13,7 @@ Cada parte liga e desliga no `config.lua`, e as cores são suas.
 Pegue o `alm_hud-<versão>.zip` na página de [Releases](https://github.com/dalmeidasdev/alm_hud/releases). O botão "Download ZIP" do GitHub entrega a pasta com outro nome; se usar esse caminho, renomeie a pasta para `alm_hud`. O passo a passo está no `INSTALL.md`.
 
 ## Desempenho
-Medido no `resmon` em um servidor QBCore limpo: 0,04 ms a pé e 0,10 ms dirigindo.
+Medido no `resmon` em um servidor QBCore limpo, na versão 1.0.1: 0,03 a 0,04 ms a pé e 0,09 a 0,10 ms dirigindo.
 
 ## Requisitos
 - FXServer build 5181 ou mais novo.
@@ -50,6 +50,8 @@ No QBCore com o `qb-smallresources`, o cinto já vem ligado: não precisa chamar
 
 ## Código aberto
 Todo o código deste repositório é aberto para leitura. Para ajustar o HUD ao seu servidor você só precisa mexer em `config.lua`, `locales/` e `bridge/`. A pasta `bridge/` é a ligação com o framework e com a voz: é ali que se adapta o HUD a uma base diferente.
+
+Se você baixou o HUD pelo portal da Cfx (`portal.cfx.re`) em vez do GitHub, o pacote de lá passa pelo Asset Escrow: nele, o Lua fora de `config.lua`, `locales/` e `bridge/` vem protegido e o resource só liga com a license key da mesma conta Cfx. O funcionamento é o mesmo.
 
 O script não coleta nem envia dados do seu servidor. Com `Config.VersionCheck` ligado, ele só lê um arquivo público (`https://raw.githubusercontent.com/dalmeidasdev/versions/main/versions.json`) para avisar no console quando sai versão nova.
 
